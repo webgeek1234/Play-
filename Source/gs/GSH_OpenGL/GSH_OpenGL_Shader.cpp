@@ -99,6 +99,7 @@ Framework::OpenGl::CShader CGSH_OpenGL::GenerateVertexShader(const SHADERCAPS& c
 
 	shaderBuilder << "out vec4 v_color;" << std::endl;
 	shaderBuilder << "out vec3 v_texCoord;" << std::endl;
+	shaderBuilder << "out float v_depth;" << std::endl;
 	if(caps.hasFog)
 	{
 		shaderBuilder << "in float a_fog;" << std::endl;
@@ -114,6 +115,7 @@ Framework::OpenGl::CShader CGSH_OpenGL::GenerateVertexShader(const SHADERCAPS& c
 	{
 		shaderBuilder << "	v_fog = a_fog;" << std::endl;
 	}
+	shaderBuilder << "	v_depth = a_position.z;" << std::endl;
 	shaderBuilder << "	gl_Position = g_projMatrix * vec4(a_position, 1);" << std::endl;
 	shaderBuilder << "}" << std::endl;
 
@@ -139,6 +141,7 @@ Framework::OpenGl::CShader CGSH_OpenGL::GenerateFragmentShader(const SHADERCAPS&
 
 	shaderBuilder << "in vec4 v_color;" << std::endl;
 	shaderBuilder << "in highp vec3 v_texCoord;" << std::endl;
+	shaderBuilder << "in highp float v_depth;" << std::endl;
 	if(caps.hasFog)
 	{
 		shaderBuilder << "in float v_fog;" << std::endl;
@@ -335,6 +338,7 @@ Framework::OpenGl::CShader CGSH_OpenGL::GenerateFragmentShader(const SHADERCAPS&
 	shaderBuilder << "	blendColor.a = clamp(textureColor.a * 2.0, 0.0, 1.0);" << std::endl;
 #endif
 
+	shaderBuilder << "	gl_FragDepth = v_depth;" << std::endl;
 	shaderBuilder << "}" << std::endl;
 
 	auto shaderSource = shaderBuilder.str();
