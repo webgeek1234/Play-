@@ -763,6 +763,7 @@ public:
 	bool GetCrtIsFrameMode() const;
 
 	virtual Framework::CBitmap GetScreenshot();
+	void ProcessSingleFrame();
 
 	FlipCompleteEvent OnFlipComplete;
 	NewFrameEvent OnNewFrame;
