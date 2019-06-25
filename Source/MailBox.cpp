@@ -36,9 +36,11 @@ void CMailBox::SendCall(const FunctionType& function, bool waitForCompletion, bo
 
 	std::unique_lock<std::mutex> callLock(m_callMutex);
 
+	int id = ++m_count;
 	{
 		MESSAGE message;
 		message.function = function;
+		message.id = id;
 		message.sync = (waitForCompletion && m_canWait) || breakpoint;
 		message.breakpoint = breakpoint;
 		m_calls.push_back(std::move(message));
@@ -48,8 +50,7 @@ void CMailBox::SendCall(const FunctionType& function, bool waitForCompletion, bo
 
 	if((waitForCompletion && m_canWait) || breakpoint)
 	{
-		m_callDone = false;
-		while(!m_callDone)
+		while(m_processedID < id && m_processedID != -1)
 		{
 			m_callFinished.wait(callLock);
 		}
@@ -90,8 +91,10 @@ void CMailBox::ProcessUntilBreakPoint()
 
 void CMailBox::Reset()
 {
+	m_processedID = -1;
 	m_calls.clear();
 	m_callFinished.notify_all();
+	m_processedID = m_count;
 }
 
 bool CMailBox::ReceiveCall()
@@ -107,7 +110,7 @@ bool CMailBox::ReceiveCall()
 	if(message.sync)
 	{
 		std::lock_guard<std::mutex> waitLock(m_callMutex);
-		m_callDone = true;
+		m_processedID = message.id;
 		m_callFinished.notify_all();
 	}
 	return message.breakpoint;

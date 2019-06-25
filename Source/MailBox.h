@@ -36,6 +36,7 @@ private:
 		MESSAGE& operator=(const MESSAGE&) = delete;
 
 		FunctionType function;
+		int id;
 		bool sync;
 		bool breakpoint;
 	};
@@ -46,6 +47,7 @@ private:
 	std::mutex m_callMutex;
 	std::condition_variable m_callFinished;
 	std::condition_variable m_waitCondition;
-	bool m_callDone;
 	bool m_canWait = true;
+	int m_count = 0;
+	int m_processedID = 0;
 };
