@@ -12,14 +12,17 @@ public:
 
 	typedef std::function<void()> FunctionType;
 
-	void SendCall(const FunctionType&, bool = false);
+	void SendCall(const FunctionType&, bool = false, bool = false);
 	void SendCall(FunctionType&&);
 	void FlushCalls();
 
 	bool IsPending() const;
-	void ReceiveCall();
+	bool ReceiveCall();
 	void WaitForCall();
 	void WaitForCall(unsigned int);
+	void SetCanWait(bool);
+	void ProcessUntilBreakPoint();
+	void Reset();
 
 private:
 	struct MESSAGE
@@ -34,6 +37,7 @@ private:
 
 		FunctionType function;
 		bool sync;
+		bool breakpoint;
 	};
 
 	typedef std::deque<MESSAGE> FunctionCallQueue;
@@ -43,4 +47,5 @@ private:
 	std::condition_variable m_callFinished;
 	std::condition_variable m_waitCondition;
 	bool m_callDone;
+	bool m_canWait = true;
 };

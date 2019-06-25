@@ -29,20 +29,24 @@ void CMailBox::FlushCalls()
 	SendCall([]() {}, true);
 }
 
-void CMailBox::SendCall(const FunctionType& function, bool waitForCompletion)
+void CMailBox::SendCall(const FunctionType& function, bool waitForCompletion, bool breakpoint)
 {
+	if(m_processedID == -1)
+		return;
+
 	std::unique_lock<std::mutex> callLock(m_callMutex);
 
 	{
 		MESSAGE message;
 		message.function = function;
-		message.sync = waitForCompletion;
+		message.sync = (waitForCompletion && m_canWait) || breakpoint;
+		message.breakpoint = breakpoint;
 		m_calls.push_back(std::move(message));
 	}
 
 	m_waitCondition.notify_all();
 
-	if(waitForCompletion)
+	if((waitForCompletion && m_canWait) || breakpoint)
 	{
 		m_callDone = false;
 		while(!m_callDone)
@@ -60,18 +64,42 @@ void CMailBox::SendCall(FunctionType&& function)
 		MESSAGE message;
 		message.function = std::move(function);
 		message.sync = false;
+		message.breakpoint = false;
 		m_calls.push_back(std::move(message));
 	}
 
 	m_waitCondition.notify_all();
 }
 
-void CMailBox::ReceiveCall()
+void CMailBox::SetCanWait(bool val)
+{
+	m_canWait = val;
+	SendCall([]() {});
+}
+
+void CMailBox::ProcessUntilBreakPoint()
+{
+	bool isBreakPoint = false;
+	while(!isBreakPoint)
+	{
+		if(!IsPending())
+			WaitForCall();
+		isBreakPoint = ReceiveCall();
+	}
+}
+
+void CMailBox::Reset()
+{
+	m_calls.clear();
+	m_callFinished.notify_all();
+}
+
+bool CMailBox::ReceiveCall()
 {
 	MESSAGE message;
 	{
 		std::lock_guard<std::mutex> waitLock(m_callMutex);
-		if(!IsPending()) return;
+		if(!IsPending()) return false;
 		message = std::move(m_calls.front());
 		m_calls.pop_front();
 	}
@@ -82,4 +110,5 @@ void CMailBox::ReceiveCall()
 		m_callDone = true;
 		m_callFinished.notify_all();
 	}
+	return message.breakpoint;
 }
