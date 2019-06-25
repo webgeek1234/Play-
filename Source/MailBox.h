@@ -23,6 +23,7 @@ public:
 	void SetCanWait(bool);
 	void ProcessUntilBreakPoint();
 	void Reset();
+	void Release();
 
 private:
 	struct MESSAGE

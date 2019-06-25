@@ -89,11 +89,16 @@ void CMailBox::ProcessUntilBreakPoint()
 	}
 }
 
-void CMailBox::Reset()
+void CMailBox::Release()
 {
 	m_processedID = -1;
 	m_calls.clear();
 	m_callFinished.notify_all();
+}
+
+void CMailBox::Reset()
+{
+	Release();
 	m_processedID = m_count;
 }
 
