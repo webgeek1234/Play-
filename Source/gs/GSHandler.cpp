@@ -106,7 +106,8 @@ CGSHandler::CGSHandler()
 CGSHandler::~CGSHandler()
 {
 	m_mailBox.SendCall([this]() { m_threadDone = true; });
-	m_thread.join();
+	if(m_thread.joinable())
+		m_thread.join();
 	delete[] m_pRAM;
 	delete[] m_pCLUT;
 }

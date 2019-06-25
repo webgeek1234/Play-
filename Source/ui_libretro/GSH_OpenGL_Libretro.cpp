@@ -10,8 +10,9 @@ extern struct retro_hw_render_callback g_hw_render;
 
 CGSH_OpenGL_Libretro::CGSH_OpenGL_Libretro()
 {
-	m_threadDone = true;
 	m_mailBox.SetCanWait(false);
+	m_mailBox.SendCall([this]{ m_threadDone = true; }, true, true);
+	m_thread.join();
 }
 
 CGSH_OpenGL_Libretro::~CGSH_OpenGL_Libretro()
