@@ -75,7 +75,7 @@ void CMailBox::SendCall(FunctionType&& function)
 void CMailBox::SetCanWait(bool val)
 {
 	m_canWait = val;
-	SendCall([]() {});
+	SendCall([]() {}, true, true);
 }
 
 void CMailBox::ProcessUntilBreakPoint()
