@@ -18,7 +18,6 @@ public:
 	void PresentBackbuffer() override;
 	void UpdatePresentation();
 
-
 private:
 	void UpdatePresentationImpl();
 };
