@@ -1,0 +1,106 @@
+.libretro:
+  stage: build
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    CORENAME: play
+    CMAKE: cmake
+  before_script:
+    - export NUMPROC=$(($(nproc)+1))
+  script:
+    - $CMAKE -DBUILD_LIBRETRO_CORE=ON -DBUILD_PLAY=OFF -DBUILD_TESTS=OFF $PLATFORM_ARGS . -B$BUILD_DIR
+    - cmake --build $BUILD_DIR --target ${CORENAME}_libretro --config Release --parallel $NUMPROC
+    - mkdir -p $OUT_DIR
+    - mv $BUILD_DIR/Source/ui_libretro/$LIBNAME $OUT_DIR/$LIBNAME
+    - $STRIP $OUT_DIR/$LIBNAME
+
+.libretro-armeabi-v7a:
+  variables:
+    ARCH: armeabi-v7a
+
+.libretro-arm64-v8a:
+  variables:
+    ARCH: arm64-v8a
+
+.libretro-x86:
+  variables:
+    ARCH: x86
+
+.libretro-x86_64:
+  variables:
+    ARCH: x86_64
+
+.libretro-android:
+  extends: .libretro
+  tags:
+    - android
+  variables:
+    LIBNAME: ${CORENAME}_libretro_android.so
+    API_LEVEL_LOCAL: 19
+    PLATFORM_ARGS: -DANDROID_PLATFORM=android-$API_LEVEL_LOCAL -DCMAKE_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=$ARCH
+    BUILD_DIR: build/android-$ARCH
+    OUT_DIR: android/latest/$ARCH
+    STRIP: $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
+  artifacts:
+    name: android-$ARCH
+    paths:
+      - android/latest/$ARCH/$LIBNAME
+
+libretro-android-armeabi-v7a:
+  extends:
+    - .libretro-android
+    - .libretro-armeabi-v7a
+
+libretro-android-arm64-v8a:
+  extends:
+    - .libretro-android
+    - .libretro-arm64-v8a
+
+libretro-android-x86:
+  extends:
+    - .libretro-android
+    - .libretro-x86
+
+libretro-android-x86_64:
+  extends:
+    - .libretro-android
+    - .libretro-x86_64
+
+.libretro-linux:
+  extends: .libretro
+  tags:
+    - linux
+  variables:
+    LIBNAME: ${CORENAME}_libretro.so
+    BUILD_DIR: build/linux-$ARCH
+    OUT_DIR: linux/$ARCH/latest/$LIBNAME
+    STRIP: strip
+  artifacts:
+    name: linux-$ARCH
+    paths:
+      - linux/$ARCH/latest/$LIBNAME
+
+libretro-linux-x86:
+  extends:
+    - .libretro-linux
+    - .libretro-x86
+  variables:
+    CFLAGS: -m32
+    CXXFLAGS: -m32
+    LDFLAGS: -m32
+
+libretro-linux-x86_64:
+  extends:
+    - .libretro-linux
+    - .libretro-x86_64
+
+deploy:
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  tags:
+    - deploy
+  script:
+    - for dir in */*/*/; do (cd -- "$dir" && for i in *; do zip $i.zip $i; done && cp -f *.zip $DEPLOY_PATH/nightly/$dir/); done
+  after_script:
+    - rm -rf *
+    - $CREATE_INDEX_PATH $DEPLOY_PATH
