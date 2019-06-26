@@ -10,4 +10,9 @@
 	<Executable Name="SLES_501.76;1" Title="Oni" Region="EU">
 		<Patch Address="0x001cef7c" Value="0x00000000 // bc0f $001cef7c" Description="Fix hang by skip branch if copro 0 condition false." />
 	</Executable>
+	
+	<Executable Name="SLUS_213.38;1" Title="Armored Core: Last Raven" Region="US">
+		<Patch Address="0x00157D18" Value="0x00000000" Description="Disable SIF bind." />
+		<Patch Address="0x00157D34" Value="0x00000000" Description="Disable SIF bind." />
+	</Executable>
 </Patches>
