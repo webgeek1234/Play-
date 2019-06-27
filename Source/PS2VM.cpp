@@ -542,6 +542,11 @@ void CPS2VM::CreateSoundHandlerImpl(const CSoundHandler::FactoryFunction& factor
 	m_soundHandler = factoryFunction();
 }
 
+CSoundHandler* CPS2VM::GetSoundHandler()
+{
+	return m_soundHandler;
+}
+
 void CPS2VM::DestroySoundHandlerImpl()
 {
 	if(m_soundHandler == nullptr) return;
