@@ -505,6 +505,7 @@ void retro_init()
 
 	m_virtualMachine = new CPS2VM();
 	m_virtualMachine->Initialize();
+	m_virtualMachine->SetSpuBlockCount(22);
 
 	SetupInputHandler();
 	SetupSoundHandler();
