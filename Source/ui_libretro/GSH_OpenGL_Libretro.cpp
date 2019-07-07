@@ -28,8 +28,7 @@ void CGSH_OpenGL_Libretro::InitializeImpl()
 {
 	fprintf(stderr, "%s\n", __FUNCTION__);
 
-
-#if !defined(__APPLE__) && !defined(GLES_COMPATIBILITY)
+#if defined(USE_GLEW)
 	glewExperimental = GL_TRUE;
 	auto result = glewInit();
 	CLog::GetInstance().Warn(LOG_NAME, "glewInit %d\n", result == GLEW_OK);
