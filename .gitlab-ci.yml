@@ -79,7 +79,7 @@ libretro-android-x86_64:
     paths:
       - linux/$ARCH/latest/$LIBNAME
 
-libretro-linux-x86:
+.libretro-linux-x86:
   extends:
     - .libretro-linux
     - .libretro-x86
